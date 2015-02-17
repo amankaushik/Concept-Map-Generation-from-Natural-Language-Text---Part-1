@@ -1,0 +1,199 @@
+package OLLIEEXTRACTOR;
+
+/**
+ * Created by chanakya on 9/11/14.
+ */
+
+import java.io.*;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.aliasi.cluster.HierarchicalClusterer;
+import com.aliasi.cluster.SingleLinkClusterer;
+import com.aliasi.spell.EditDistance;
+import com.aliasi.util.Distance;
+import edu.knowitall.ollie.Ollie;
+import edu.knowitall.ollie.OllieExtraction;
+import edu.knowitall.ollie.OllieExtractionInstance;
+import edu.knowitall.tool.parse.MaltParser;
+import edu.knowitall.tool.parse.graph.DependencyGraph;
+
+import scala.util.parsing.combinator.testing.Str;
+import uk.ac.shef.wit.simmetrics.similaritymetrics.*;
+
+public class OllieExtractor {
+    private Ollie ollie;
+    private MaltParser maltParser;
+    private static final String MALT_PARSER_FILENAME = "engmalt.linear-1.7.mco";
+
+    public OllieExtractor() throws MalformedURLException {
+        scala.Option<File> nullOption = scala.Option.apply(null);
+        maltParser = new MaltParser(new File(MALT_PARSER_FILENAME));
+        ollie = new Ollie();
+    }
+
+    public Iterable<OllieExtractionInstance> extract(String sentence) {
+        DependencyGraph graph = maltParser.dependencyGraph(sentence);
+        Iterable<OllieExtractionInstance> extrs = scala.collection.JavaConversions.asJavaIterable(ollie.extract(graph));
+        return extrs;
+    }
+
+    public ArrayList<String> merge_similar(ArrayList<String> list_tuple) {
+
+        ArrayList<String> new_list_tuple = new ArrayList<String>();
+        ArrayList<String> arg1 = new ArrayList<String>();
+        ArrayList<String> arg2 = new ArrayList<String>();
+        Distance<CharSequence> EDIT_DISTANCE = new EditDistance(false);
+        int maxDistance = 0;
+        Set<String> inputSet_arg1 = new HashSet<String>();
+        Set<String> inputSet_arg2 = new HashSet<String>();
+        for (String ele : list_tuple) {
+            String[] temp = ele.split("\t");
+            inputSet_arg1.add(temp[0]);
+            inputSet_arg2.add(temp[2]);
+        }
+        for (String s1 : inputSet_arg1)
+            for (String s2: inputSet_arg1)
+                if (s1.compareTo(s2) < 0)
+                    System.out.println("distance(" + s1 + "," + s2 + ")="
+                            + EDIT_DISTANCE.distance(s1,s2));
+        for (String s1 : inputSet_arg2)
+            for (String s2: inputSet_arg2)
+                if (s1.compareTo(s2) < 0)
+                    System.out.println("distance(" + s1 + "," + s2 + ")="
+                            + EDIT_DISTANCE.distance(s1,s2));
+        HierarchicalClusterer<String> slClusterer = new SingleLinkClusterer<String>(maxDistance, EDIT_DISTANCE);
+        Set<Set<String>> slClustering = slClusterer.cluster(inputSet_arg1);
+        System.out.println("\nSingle Link Clustering 1");
+        System.out.println(slClustering);
+        slClustering = slClusterer.cluster(inputSet_arg2);
+        System.out.println("\nSingle Link Clustering 2");
+        System.out.println(slClustering);
+        /*
+        int len1 = arg1.size();
+        int len2 = arg2.size();
+        Float[][] sim_matrix = new Float[][]{};
+        AbstractStringMetric metric = new MongeElkan();
+        for (int i = 0; i < len1; i++) {
+            for (int j = 0; j < len1; j++) {
+                sim_matrix[i][j] = metric.getSimilarity(arg1.get(i).toLowerCase(), arg1.get(j).toLowerCase());
+            }
+        }
+        for (int i = 0; i < len1; i++) {
+            for (int j = 0; j < len2; j++) {
+                if (sim_matrix[i][j] > 0.85) {
+                    if (arg1.get(i).length() >= arg2.get(j).length()) {
+                    } else {
+
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < len2; i++) {
+            for (int j = 0; j < len2; j++) {
+                sim_matrix[i][j] = metric.getSimilarity(arg2.get(i).toLowerCase(), arg2.get(j).toLowerCase());
+            }
+        }
+        */
+        return new_list_tuple;
+    }
+
+    public static void main(String args[]) throws MalformedURLException, FileNotFoundException, UnsupportedEncodingException {
+        String direct_text_given = "";
+        System.out.println(OllieExtractor.class.getResource("/logback.xml"));
+        ArrayList<String> files_to_process = new ArrayList<String>();
+        String dir = "";
+        if (args.length > 0) {
+            if (args.length > 2) {
+                System.err.println("Argument count exceeds two");
+                System.exit(1);
+            } else {
+                if (args[0] == "1") {
+                    dir = args[1];
+                    File f = new File(dir);
+                    if (!(f.exists() && f.isDirectory())) {
+                        System.err.println("Directory doesn't exists");
+                        System.exit(1);
+                    }
+                } else {
+                    direct_text_given = args[1];
+                }
+            }
+        } else {
+            dir = "/home/chanakya/NCERT";
+        }
+        File folder = new File(dir);
+        File[] listOfFiles = folder.listFiles();
+        for (int i = 0; i < listOfFiles.length; i++) {
+            String name = listOfFiles[i].getName();
+            if (listOfFiles[i].isFile() && name.endsWith("_ParseOutput.txt")) {
+                files_to_process.add(name);
+            }
+        }
+        OllieExtractor ollieWrapper = new OllieExtractor();
+        for (String filename : files_to_process) {
+            BufferedReader reader = null;
+
+            try {
+                reader = new BufferedReader(new FileReader(dir + "/" + filename));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            String line = null;
+            ArrayList<String> text = new ArrayList<String>();
+            try {
+                while ((line = reader.readLine()) != null) {
+                    text.add(line.toString());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //System.out.println(text.size());
+            PrintWriter writer = new PrintWriter(dir + "/" + filename + "_OllieOutput.txt", "UTF-8");
+            //writer.print('[');
+            String tuple = new String();
+            ArrayList<String> list_tuple = new ArrayList<String>();
+            for (String sentence : text) {
+                Iterable<OllieExtractionInstance> extracts = ollieWrapper.extract(sentence);
+                for (OllieExtractionInstance instance : extracts) {
+                    OllieExtraction extract = instance.extr();
+                    /*
+                    tuple += (extract.arg1().text() + "\t*\t" + extract.rel().text() + "\t*\t" + extract.arg2().text()
+                            + "\t*\t" + extract.enabler().toString() + "\t*\t" + extract.attribution().toString());
+                    */
+                    // REMOVE ARTICLES ('the', 'an', 'a') and 'these'
+                    String arg1;
+                    if (extract.arg1().text().length() > 5) // len of 'these'
+                        arg1 = extract.arg1().text().replaceFirst("^(([Tt][Hh][Ee][Ss][Ee])|([Tt][Hh][Ee])|([Aa][Nn])|([Aa])) ", "");
+                    else
+                        arg1 = extract.arg1().text();
+                    String arg2;
+                    if (extract.arg2().text().length() > 5)
+                        arg2 = extract.arg2().text().replaceFirst("^(([Tt][Hh][Ee])|([Aa][Nn])|([Aa])) ", "");
+                    else
+                        arg2 = extract.arg2().text();
+
+                    tuple = (arg1 + "\t" + extract.rel().text() + "\t" + arg2);
+                    //writer.println(tuple);
+                    list_tuple.add(tuple);
+                    tuple = "";
+                }
+            }
+            // MERGING SIMILAR ARGUMENTS TOGETHER
+            /*
+            ArrayList<String> tep = new ArrayList<String>();
+            tep = ollieWrapper.merge_similar(list_tuple);
+            */
+
+            //
+            for (String tup : list_tuple)
+                writer.println(tup);
+            //writer.print(']');
+            writer.close();
+            System.out.println("Processed " + filename);
+        }
+        System.out.println("OLLIE Processing complete");
+    }
+}

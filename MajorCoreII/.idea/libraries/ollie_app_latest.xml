@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ollie-app-latest">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/ollie-app-latest.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

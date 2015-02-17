@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MajorCoreII:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MajorCoreII_jar</output-path>
+    <root id="archive" name="MajorCoreII.jar">
+      <element id="module-output" name="MajorCoreII" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/ollie-app-latest.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

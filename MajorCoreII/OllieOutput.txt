@@ -1,0 +1,18 @@
+Batman	is the secret identity of	Bruce Wayne , an American billionaire , industrialist , and philanthropist
+Batman	is	the secret identity of Bruce Wayne
+Batman	swore an oath tempered with a sense of justice	revenge
+Batman	swore revenge on criminals	an oath tempered with a sense of justice
+an oath	be tempered with	a sense of justice
+Wayne	trains	Bruce Wayne
+Batman	operates in	the fictional Gotham City
+Alfred Pennyworth	be butler of	Batman
+the fictional Gotham City	be assisted by	various supporting characters
+Alfred Pennyworth	be butler for	Batman
+He	fights	a large assortment of villains often referred to as the `` rogues gallery '' ,
+a large assortment of villains	be often referred as	the `` rogues gallery which includes the Joker , the Penguin , the Riddler , Two-Face , Ra 's al Ghul , Scarecrow , Poison Ivy , and Catwoman
+the Joker , the Penguin , the Riddler , Two-Face , Ra 's al Ghul , Scarecrow , Poison Ivy , and Catwoman	be includes by	the `` rogues gallery
+Batman	be intimidation in	Batman continuous war
+Batman	does not possess	any superpowers
+Batman	makes	use of intellect
+Batman	does not possess any superpowers unlike	most superheroes
+any superpowers	does not possess unlike	most superheroes
